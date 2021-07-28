@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [[ $(id -u) -eq 0 ]]; then
+	if [[ $1 == "stable" || $1 == "unstable" || $1 == "testing" ]]; then
+		pacman-mirrors --api --set-branch $1
+		pacman-mirrors --fasttrack 5 && pacman -Syyu
+	else
+		echo "Valid branches are stable, testing and unstable"
+	fi
+elif [[ $1 == "--help" ]]; then
+	echo -e "Script to change branch for manjaro installation and need to be run as root.\nValid branches to choose are stable, testing and unstable."
+else
+	echo "Need to run as root"
+fi
