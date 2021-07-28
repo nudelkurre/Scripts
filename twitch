@@ -1,3 +1,8 @@
 #!/bin/bash
 
-streamlink https://twitch.tv/$1 &
+if [ -z $1 ]; then
+	stream=$(zenity --entry --text "Enter twitch stream name to open:" --title "Twitch")
+	streamlink https://twitch.tv/$stream
+else
+	streamlink https://twitch.tv/$1
+fi
