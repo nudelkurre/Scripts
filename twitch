@@ -1,0 +1,3 @@
+#!/bin/bash
+
+streamlink https://twitch.tv/$1 &
