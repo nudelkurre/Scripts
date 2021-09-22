@@ -2,7 +2,11 @@
 
 if [ -z $1 ]; then
 	stream=$(zenity --entry --text "Enter twitch stream name to open:" --title "Twitch")
-	streamlink https://twitch.tv/$stream
+	if [ -z $stream ]; then
+		echo "Empty stream name"
+	else
+		streamlink https://twitch.tv/$stream
+	fi
 else
 	streamlink https://twitch.tv/$1
 fi
