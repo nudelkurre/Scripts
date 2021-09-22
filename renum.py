@@ -9,7 +9,7 @@ for root, dirs, files in os.walk(directory, topdown=True):
 videofiles=list()
 subtitles=list()
 
-series = root.split("/")[0]
+series = root.split("/")[0].split("(")[0]
 season = root.split("/")[1].split("_")[1]
 
 for i in files:
