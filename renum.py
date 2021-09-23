@@ -16,7 +16,7 @@ for i in files:
 	extension = i.split(".")[-1]
 	if(extension == "mp4" or extension == "txt"):
 		videofiles.append(i)
-	elif(extension == "srt" or extension == "vtt"):
+	elif(extension == "srt" or extension == "vtt" or extension == "ass"):
 		subtitles.append(i)
 videofiles.sort()
 subtitles.sort()
