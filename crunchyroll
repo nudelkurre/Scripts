@@ -29,11 +29,11 @@ elif(args.url):
     links.append(args.url)
 
 if(args.list_subs):
-    quite = False
-    simulate = True
+    quiet = False
     list_subs = True
 elif(args.simulate):
     simulate = True
+    quiet = False
 
 if(args.no_dir):
     file_output = "%(series)s_S01E%(episode_number)02d.%(ext)s"
