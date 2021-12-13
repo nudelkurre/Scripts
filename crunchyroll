@@ -10,8 +10,9 @@ group.add_argument("-u", "--url", type=str, dest="url", help="Specify a url to d
 parser.add_argument("-s", type=str, dest="subs", help="Specify language for subs to use")
 parser.add_argument("--list-subs", action="store_true", dest="list_subs", help="Specify if only list available subs for link")
 parser.add_argument("--simulate", action="store_true", dest="simulate", help="Simulate download")
-parser.add_argument("--no-directory", action="store_true", dest="no_dir", help="Save file in current directory, dont create subdirectory for Serie and season to put files in")
+# parser.add_argument("--no-directory", action="store_true", dest="no_dir", help="Save file in current directory, dont create subdirectory for Serie and season to put files in")
 parser.add_argument("-S", "--season", type=str, dest="season", help="Specify the season")
+parser.add_argument("-y", type=int, dest="year", help="Specify the year the series started")
 args = parser.parse_args()
 
 links = []
@@ -20,6 +21,7 @@ quiet = True
 simulate = False
 list_subs = False
 season = ""
+year = ""
 
 if(args.subs):
     if(len(args.subs) > 0):
@@ -48,10 +50,13 @@ if(args.season):
 elif(not args.season):
     season = "01"
 
-if(args.no_dir):
+if(args.year):
+    year = "(" + str(args.year) + ")"
+
+if(args.url):
     file_output = "%(series)s_S" + season + "E%(episode_number)02d.%(ext)s"
-elif(not args.no_dir):
-    file_output = "%(series)s/Season_" + season + "/%(series)s_S" + season + "E%(episode_number)02d.%(ext)s"
+elif(not args.url):
+    file_output = "%(series)s" + year + "/Season_" + season + "/%(series)s_S" + season + "E%(episode_number)02d.%(ext)s"
 
 ydl_opts = {
     'format': 'bestvideo[height<=720][ext=mp4]+bestaudio/best[height<=720][ext=mp4]',
