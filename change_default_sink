@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
 
 import pulsectl
+import sys
 
 pulse = pulsectl.Pulse('test')
 
-sinks = []
+sinks = sys.argv[1:]
 default = pulse.server_info().default_sink_name
-
-for i in pulse.sink_list():
-    if("Game" in i.description):
-        sinks.append(i)
-    elif("Built-in" in i.description):
-        sinks.append(i)
+sink_list = []
 
 for i in sinks:
-    if(default != i.name):
-        pulse.default_set(i)
+    for j in pulse.sink_list():
+        if(i in j.name):
+            sink_list.append(j)
+        elif(i in j.description):
+            sink_list.append(j)
+
+for i in range(len(sink_list)):
+    if(default == sink_list[i].name):
+        pulse.default_set(sink_list[(i + 1) % len(sink_list)])
+        break
