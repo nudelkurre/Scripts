@@ -20,3 +20,6 @@ for i in range(len(sink_list)):
     if(default == sink_list[i].name):
         pulse.default_set(sink_list[(i + 1) % len(sink_list)])
         break
+    elif(default not in sink_list):
+        pulse.default_set(sink_list[0])
+        break
