@@ -47,15 +47,17 @@ if(args.season):
         season = "00"
     elif(len(args.season) >= 2):
         season = args.season
-elif(not args.season):
+elif(not args.season and args.url):
     season = "01"
+elif(not args.season and args.file):
+    season = "%(season_number)02d"
 
 if(args.year):
     year = "(" + str(args.year) + ")"
 
 if(args.url):
     file_output = "%(series)s_S" + season + "E%(episode_number)02d.%(ext)s"
-elif(not args.url):
+elif(args.file):
     file_output = "%(series)s" + year + "/Season_" + season + "/%(series)s_S" + season + "E%(episode_number)02d.%(ext)s"
 
 ydl_opts = {
