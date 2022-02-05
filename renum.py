@@ -43,7 +43,7 @@ for i in subtitles:
 	else:
 		episode = str(temp2)
 	src = directory +  i
-	dst = directory + series + "_S" + season + "E" + episode + ".swe.default." + extension
+	dst = directory + series + "_S" + season + "E" + episode + ".swe." + extension
 #	print(dst)
 	os.replace(src, dst)
 	temp2 = temp2 + 1
