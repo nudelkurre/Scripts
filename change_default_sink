@@ -8,6 +8,8 @@ pulse = pulsectl.Pulse('test')
 sinks = sys.argv[1:]
 default = pulse.server_info().default_sink_name
 sink_list = []
+sinks_looped = 0
+sink_changed = False
 
 for i in sinks:
     for j in pulse.sink_list():
@@ -19,7 +21,10 @@ for i in sinks:
 for i in range(len(sink_list)):
     if(default == sink_list[i].name):
         pulse.default_set(sink_list[(i + 1) % len(sink_list)])
+        sink_changed = True
         break
-    elif(default not in sink_list):
+    elif(default != sink_list[i].name):
+        sinks_looped += 1
+    if(sinks_looped == len(sink_list) and not sink_changed):
         pulse.default_set(sink_list[0])
         break
