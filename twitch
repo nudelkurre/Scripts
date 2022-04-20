@@ -7,19 +7,19 @@ if [ -z $1 ]; then
 	else
 		echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream started" >> ~/.twitch.log
 		streamlink https://twitch.tv/$stream > /dev/null
-		exit_status=$?
-		echo $exit_status
-		if [ $exit_status -eq 0 ]; then
-			echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream closed" >> ~/.twitch.log
-		elif [ $exit_status -eq 1 ]; then
-			echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream closed (Exit: $exit_status)" >> ~/.twitch.log
-		elif [ $exit_status -eq 130 ]; then
-			echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream (Terminated)" >> ~/.twitch.log
-		elif [ $exit_status -eq 137 ]; then
-			echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream (Killed)" >> ~/.twitch.log
-		else
-			echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream not found or offline $exit_status" >> ~/.twitch.log
-		fi
+		# exit_status=$?
+		# echo $exit_status
+		# if [ $exit_status -eq 0 ]; then
+		# 	echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream closed" >> ~/.twitch.log
+		# elif [ $exit_status -eq 1 ]; then
+		# 	echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream closed (Exit: $exit_status)" >> ~/.twitch.log
+		# elif [ $exit_status -eq 130 ]; then
+		# 	echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream (Terminated)" >> ~/.twitch.log
+		# elif [ $exit_status -eq 137 ]; then
+		# 	echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream (Killed)" >> ~/.twitch.log
+		# else
+		# 	echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream not found or offline $exit_status" >> ~/.twitch.log
+		# fi
 	fi
 else
 	stream=$1
@@ -28,17 +28,17 @@ else
 	else
 		echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream started" >> ~/.twitch.log
 		streamlink https://twitch.tv/$stream > /dev/null
-		exit_status=$?
-		if [ $exit_status -eq 0 ]; then
-			echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream closed" >> ~/.twitch.log
-		elif [ $exit_status -eq 1 ]; then
-			echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream closed (Exit: $exit_status)" >> ~/.twitch.log
-		elif [ $exit_status -eq 130 ]; then
-			echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream (Terminated)" >> ~/.twitch.log
-		elif [ $exit_status -eq 137 ]; then
-			echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream (Killed)" >> ~/.twitch.log
-		else
-			echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream not found or offline" >> ~/.twitch.log
-		fi
+		# exit_status=$?
+		# if [ $exit_status -eq 0 ]; then
+		# 	echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream closed" >> ~/.twitch.log
+		# elif [ $exit_status -eq 1 ]; then
+		# 	echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream closed (Exit: $exit_status)" >> ~/.twitch.log
+		# elif [ $exit_status -eq 130 ]; then
+		# 	echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream (Terminated)" >> ~/.twitch.log
+		# elif [ $exit_status -eq 137 ]; then
+		# 	echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream (Killed)" >> ~/.twitch.log
+		# else
+		# 	echo "$(date +'%Y-%m-%d %H:%M:%S'): $stream not found or offline" >> ~/.twitch.log
+		# fi
 	fi
 fi
