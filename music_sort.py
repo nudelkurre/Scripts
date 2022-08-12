@@ -5,14 +5,16 @@ from pathlib import Path
 from tinytag import TinyTag
 
 directory = sys.argv[1] + "/"
+extensions = ["mp3", "ogg"]
 
 f = []
 for root, dirs, files in os.walk(directory, topdown=True):
     f.extend(files)
     break
 #temp=f
+f = [x for x in f if x.split(".")[-1] in extensions]
 f.sort()
-print(f)
+# print(f)
 
 #for i in files:
 #    tempstr = i.split("-")
@@ -43,7 +45,10 @@ print(f)
 for i in f:
     file_format = "." + i.split(".")[-1]
     tag = TinyTag.get(i)
-    if(len(tag.track) < 2):
+    print(tag.track)
+    if(tag.track == None):
+        padded_tracknr = "01"
+    elif(len(tag.track) < 2):
         padded_tracknr = "0" + tag.track
     else:
         padded_tracknr = tag.track
