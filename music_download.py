@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 from __future__ import unicode_literals
-import youtube_dl
+import yt_dlp as youtube_dl
+import sys
 
-templist_file = open('/home/emil/Nextcloud/Notes/Music to download.txt', 'r').read().split("\n")[1:]
+# templist_file = open('/home/emil/Nextcloud/Notes/Music to download.txt', 'r').read().split("\n")[1:]
+templist_file = open(sys.argv[1], 'r').read().split("\n")[1:]
 
 while("" in templist_file):
     templist_file.remove("")
