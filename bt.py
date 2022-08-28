@@ -19,8 +19,8 @@ for i in device:
 		key = splitted[0].lstrip().rstrip()
 		value = ":".join(splitted[1:]).lstrip().rstrip()
 		bt_dict[key] = value
-
-if(bt_dict['native-path'] != "(null)"):
-	print(f"{bt_dict['percentage']}")
-else:
-	print()
+if(bt_dict):
+	if(bt_dict['native-path'] != "(null)"):
+		print(f"{bt_dict['percentage']}")
+	else:
+		print()
