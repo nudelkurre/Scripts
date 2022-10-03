@@ -86,24 +86,6 @@ def jsonnfo(fileinfo, filename):
     locked = x.SubElement(episode, "lockdata").text = "true"
     output = x.ElementTree(episode)
     output.write("tempfile")
-
-    # title = x.SubElement(movie, "title").text = j_title
-    # showtitle = x.SubElement(movie, "showtitle").text = j_director
-    # season = x.SubElement(movie, "season").text = args.season
-    # plot = x.SubElement(movie, "plot").text = j_plot
-    # for g in j_genres:
-    #     genre = x.SubElement(movie, "genre").text = g
-    # for t in j_tags:
-    #     tag = x.SubElement(movie, "tag").text = t
-    # dateadded = x.SubElement(movie, "dateadded").text = j_releasedate
-    # releasedate = x.SubElement(movie, "releasedate").text = j_releasedate
-    # premiered = x.SubElement(movie, "premiered").text = j_releasedate
-    # aired = x.SubElement(movie, "aired").text = j_releasedate
-    # watched = x.SubElement(movie, "watched").text = "false"
-    # year = x.SubElement(movie, "year").text = j_year
-    # locked = x.SubElement(movie, "lockdata").text = "true"
-    # output = x.ElementTree(movie)
-    # output.write("tempfile")
     dom = xml.dom.minidom.parse("tempfile")
     xml_content = dom.toprettyxml()
     os.remove("tempfile")
