@@ -22,7 +22,7 @@ for name in file_list:
         height = vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
         width = vid.get(cv2.CAP_PROP_FRAME_WIDTH)
         #print(f"{name}: {width}x{height}")
-        if(width < 1280 and height < 720):
+        if(width < 1920 and height < 1080):
             low_res.append(f"{name}: {width}x{height}")
 
 
