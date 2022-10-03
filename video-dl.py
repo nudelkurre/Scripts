@@ -104,6 +104,7 @@ def jsonnfo(fileinfo, filename):
     xml_content = dom.toprettyxml()
     os.remove("tempfile")
     output_filename = f"{filename.split('.')[0]}.nfo"
+    print(output_filename)
     f = open(output_filename, "w")
     f.write(xml_content)
     f.close()
@@ -133,6 +134,9 @@ elif(args.type == "video"):
             info = ydl.extract_info(url, download=args.metadata)
             info_json = ydl.sanitize_info(info)
             filename = ydl.prepare_filename(info_json).split(".")[0]
-            jsonnfo(info_json, filename)
+            try:
+                jsonnfo(info_json, filename)
+            except FileNotFoundError:
+                print("Need to download video before creating metadata nfo")
 else:
     print("Type need to be either video or music")
