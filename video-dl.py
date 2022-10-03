@@ -63,32 +63,48 @@ def jsonnfo(fileinfo, filename):
     j_year = fileinfo["upload_date"][:4]
     j_genres = fileinfo["categories"]
     j_tags = fileinfo["tags"]
+    j_uniqueid = fileinfo["id"]
     movie = x.Element("movie")
     episode = x.Element("episodedetails")
     
-    output_filename = f"{filename.split('.')[0]}.nfo"
-    f = open(output_filename, "w")
-
-    title = x.SubElement(episode, "title").text = j_title
-    showtitle = x.SubElement(episode, "showtitle").text = j_director
-    season = x.SubElement(episode, "season").text = args.season
-    plot = x.SubElement(episode, "plot").text = j_plot
+    title = x.SubElement(episode, "title")
+    title.text = j_title
+    showtitle = x.SubElement(episode, "showtitle")
+    showtitle.text = j_director
+    season = x.SubElement(episode, "season")
+    season.text = args.season
+    plot = x.SubElement(episode, "plot")
+    plot.text = j_plot
     for g in j_genres:
-        genre = x.SubElement(episode, "genre").text = g
+        genre = x.SubElement(episode, "genre")
+        genre.text = g
     for t in j_tags:
-        tag = x.SubElement(episode, "tag").text = t
-    dateadded = x.SubElement(episode, "dateadded").text = j_releasedate
-    releasedate = x.SubElement(episode, "releasedate").text = j_releasedate
-    premiered = x.SubElement(episode, "premiered").text = j_releasedate
-    aired = x.SubElement(episode, "aired").text = j_releasedate
-    watched = x.SubElement(episode, "watched").text = "false"
-    year = x.SubElement(episode, "year").text = j_year
-    locked = x.SubElement(episode, "lockdata").text = "true"
+        tag = x.SubElement(episode, "tag")
+        tag.text = t
+    dateadded = x.SubElement(episode, "dateadded")
+    dateadded.text = j_releasedate
+    releasedate = x.SubElement(episode, "releasedate")
+    releasedate.text = j_releasedate
+    premiered = x.SubElement(episode, "premiered")
+    premiered.text = j_releasedate
+    aired = x.SubElement(episode, "aired")
+    aired.text = j_releasedate
+    watched = x.SubElement(episode, "watched")
+    watched.text = "false"
+    year = x.SubElement(episode, "year")
+    year.text = j_year
+    uniqueid = x.SubElement(episode, "uniqueid")
+    uniqueid.text = j_uniqueid
+    uniqueid.set("type", "Youtube")
+    locked = x.SubElement(episode, "lockdata")
+    locked.text = "true"
     output = x.ElementTree(episode)
     output.write("tempfile")
     dom = xml.dom.minidom.parse("tempfile")
     xml_content = dom.toprettyxml()
     os.remove("tempfile")
+    output_filename = f"{filename.split('.')[0]}.nfo"
+    f = open(output_filename, "w")
     f.write(xml_content)
     f.close()
 
