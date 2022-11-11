@@ -23,4 +23,6 @@ if(bt_dict):
 	if(bt_dict['native-path'] != "(null)"):
 		print(f"{bt_dict['percentage']}")
 	else:
-		print()
+		print("")
+else:
+	print("")
