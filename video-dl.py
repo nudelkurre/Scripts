@@ -18,10 +18,15 @@ args = parser.parse_args()
 
 path = args.path
 
+playlist_number = dict()
+
 video_opts = {
     'outtmpl': f'{path}/%(channel)s/%(title)s[%(id)s].%(ext)s',
     'writesubtitles': True,
-    'subtitleslangs': 'all',
+    'subtitleslangs': [
+        'en',
+        'sv'
+    ],
     'nooverwrites': True,
     'quiet':  True,
     'no_warnings': True,
@@ -32,6 +37,7 @@ video_opts = {
     'postprocessors': [{
         'key': 'FFmpegVideoRemuxer',
         'preferedformat': 'mkv'},
+        {'key': 'ModifyChapters'},
         {'key': 'FFmpegMetadata'},
         {'key': 'FFmpegThumbnailsConvertor',
         'format': 'jpg'},
@@ -55,6 +61,11 @@ music_opts = {
     }],
 }
 
+playlist_opts = {
+    'quiet': True,
+    'dump_single_json': True
+}
+
 def jsonnfo(fileinfo, filename):
     j_title = fileinfo["title"]
     j_plot = fileinfo["description"].lstrip("\n")
@@ -73,6 +84,8 @@ def jsonnfo(fileinfo, filename):
     showtitle.text = j_director
     season = x.SubElement(episode, "season")
     season.text = args.season
+    episode_nr = x.SubElement(episode, "episode")
+    episode_nr.text = j_releasedate.replace("-", "")
     plot = x.SubElement(episode, "plot")
     plot.text = j_plot
     for g in j_genres:
@@ -104,7 +117,6 @@ def jsonnfo(fileinfo, filename):
     xml_content = dom.toprettyxml()
     os.remove("tempfile")
     output_filename = f"{filename.split('.')[0]}.nfo"
-    print(output_filename)
     f = open(output_filename, "w")
     f.write(xml_content)
     f.close()
@@ -115,25 +127,40 @@ def musicMetadata(fileinfo, filename):
     ogg['ARTIST'] = fileinfo['artist']
     ogg['ALBUM'] = fileinfo['album']
     ogg['DATE'] = str(fileinfo['release_year'])
-    ogg['TRACKNUMBER'] = fileinfo['playlist_index'] if fileinfo['playlist_index'] else '0'
+    ogg['TRACKNUMBER'] = playlist_number[fileinfo['webpage_url']] if playlist_number[fileinfo['webpage_url']] else '0'
     print(ogg.pprint())
     ogg.save()
 
-urls = args.url
+def extractPlaylistUrls(urls):
+    url_arr = []
+    for url in urls:
+        with YoutubeDL(playlist_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            info_json = ydl.sanitize_info(info)
+            if("entries" in info_json.keys()):
+                for i in info_json["entries"]:
+                    playlist_number[i["webpage_url"]] = i["playlist_autonumber"]
+                    url_arr.append(i["webpage_url"])
+            else:
+                url_arr.append(info_json["webpage_url"])
+    return url_arr
+
+urls = extractPlaylistUrls(args.url)
+# urls = args.url
 
 if(args.type == "music"):
     for url in urls:
         with YoutubeDL(music_opts) as ydl:
             info = ydl.extract_info(url, download=args.metadata)
             info_json = ydl.sanitize_info(info)
-            filename = ydl.prepare_filename(info_json).split(".")[0] + ".ogg"
+            filename = "".join(ydl.prepare_filename(info_json).split(".")[0:-1]) + ".ogg"
             musicMetadata(info_json, filename)
 elif(args.type == "video"):
     for url in urls:
         with YoutubeDL(video_opts) as ydl:
             info = ydl.extract_info(url, download=args.metadata)
             info_json = ydl.sanitize_info(info)
-            filename = ydl.prepare_filename(info_json).split(".")[0]
+            filename = "".join(ydl.prepare_filename(info_json).split(".")[0:-1])
             try:
                 jsonnfo(info_json, filename)
             except FileNotFoundError:
