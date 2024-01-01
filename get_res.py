@@ -4,9 +4,7 @@ import cv2
 import os
 import sys
 
-#directory = "/home/emil/Videos/Series/Other/Heroes(2006)/"
 directory = sys.argv[1]
-#print(directory)
 
 file_list = []
 for root, dirs, files in os.walk(directory, topdown=True):
@@ -21,8 +19,7 @@ for name in file_list:
         vid = cv2.VideoCapture(name)
         height = vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
         width = vid.get(cv2.CAP_PROP_FRAME_WIDTH)
-        #print(f"{name}: {width}x{height}")
-        if(width < 1920 and height < 1080):
+        if(width < 1920):
             low_res.append(f"{name}: {width}x{height}")
 
 
