@@ -15,7 +15,7 @@ episodename = re.compile("\_S\d+E\d+\.")
 
 for i in files:
 	extension = i.split(".")[-1]
-	if(extension == "mp4" or extension == "txt"):
+	if(extension == "mp4" or extension == "txt" or extension == "mkv"):
 		videofiles.append(i)
 	elif(extension == "srt" or extension == "vtt" or extension == "ass"):
 		subtitles.append(i)
