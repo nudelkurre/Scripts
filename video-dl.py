@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 
 from yt_dlp import YoutubeDL
+import yt_dlp
 import argparse
+import sys
 import json
 import xml.etree.ElementTree as x
 import os
 from mutagen.oggvorbis import OggVorbis
 import xml.dom.minidom
+import time
+import re
 
 parser = argparse.ArgumentParser(description="Download videos from youtube to either mkv-videos or ogg-audio")
 # parser.add_argument(dest='type', choices=["music", "video"], help='Choose either music or video')
@@ -64,11 +68,14 @@ audio_only_opts = {
 }
 
 music_opts = {
-    'outtmpl': f'{path}/%(artist)s/%(album)s/%(title)s.%(ext)s',
+    # 'outtmpl': f'{path}/%(artist)s/%(album)s/%(title)s.%(ext)s',
+    'outtmpl': f'{path}/%(id)s.%(ext)s',
     'format': 'bestaudio/best',
     'writethumbnail': True,
     'restrictfilenames': False,
     'quiet':  True,
+    'noprogress': False,
+    'no_warnings': True,
     'simulate': False,
     'postprocessors': [{
         'key': 'FFmpegExtractAudio',
@@ -81,7 +88,9 @@ music_opts = {
 
 playlist_opts = {
     'quiet': True,
-    'dump_single_json': True
+    'dump_single_json': True,
+    'noprogress': True,
+    'no_warnings': True
 }
 
 def jsonnfo(fileinfo, filename):
@@ -154,39 +163,66 @@ def audioMetadata(fileinfo, filename):
 def musicMetadata(fileinfo, filename):
     ogg = OggVorbis(filename)
     ogg['TITLE'] = fileinfo['title']
-    ogg['ARTIST'] = fileinfo['artist']
+    ogg['ARTIST'] = fileinfo['artists'][0]
     ogg['ALBUM'] = fileinfo['album']
     ogg['DATE'] = str(fileinfo["release_date"][:4] + "-" + fileinfo["release_date"][4:6] + "-" + fileinfo["release_date"][6:8]) if fileinfo['release_date'] != None else ""
-    ogg['TRACKNUMBER'] = str(playlist_number[fileinfo['webpage_url']]) if playlist_number[fileinfo['webpage_url']] else '0'
+    ogg['TRACKNUMBER'] = str(playlist_number[fileinfo['id']]) if str(playlist_number[fileinfo['id']]) else '0'
     ogg.save()
 
 def extractPlaylistUrls(urls):
     url_arr = []
-    for url in urls:
+    for u in range(len(urls)):
+        print(f"Get playlist {u + 1} of {len(urls)}")
         with YoutubeDL(playlist_opts) as ydl:
-            info = ydl.extract_info(url, download=False)
+            info = ydl.extract_info(urls[u], download=False)
             info_json = ydl.sanitize_info(info)
             if("entries" in info_json.keys()):
                 for i in info_json["entries"]:
-                    playlist_number[i["webpage_url"]] = i["playlist_autonumber"]
+                    playlist_number[i["id"]] = i["playlist_index"] if i["playlist_index"] else i["playlist_autonumber"]
                     url_arr.append(i["webpage_url"])
             else:
-                playlist_number[info_json["webpage_url"]] = ""
+                playlist_number[info_json["id"]] = ""
                 url_arr.append(info_json["webpage_url"])
+        time.sleep(1)
+        print("\033[A\033[J", end='\r')
+    print("Playlists extracted")
     return url_arr
 
 urls = extractPlaylistUrls(args.url)
 
-if(args.music):
-    for url in urls:
-        try:
-            with YoutubeDL(music_opts) as ydl:
-                info = ydl.extract_info(url, download=True)
-                info_json = ydl.sanitize_info(info)
-                # filename = "".join(ydl.prepare_filename(info_json).split(".")[0:-1]) + ".ogg"
-                # musicMetadata(info_json, filename)
-        except FileNotFoundError as e:
-            print(f"Error with file {e}")
+if(args.music or sys.argv[0] == "music-dl"):
+    for u in range(len(urls)):
+        retries = 3
+        for r in range(retries):
+            print(f"Download track {u + 1} of {len(urls)}, try {r + 1} of {retries}")
+            try:
+                with YoutubeDL(music_opts) as ydl:
+                    info = ydl.extract_info(urls[u], download=True)
+                    info_json = ydl.sanitize_info(info)
+                    filename = f"{info_json['id']}.ogg"
+                    musicMetadata(info_json, filename)
+                    album_name = re.sub(r'\-+', "-", info_json['album'].replace("/", "-"))
+                    title = re.sub(r'\-+', "-", info_json['title'].replace("/", "-"))
+                    dest = f"{path}/{info_json['artists'][0]}/{album_name}/"
+                    if(playlist_number[info_json['id']]):
+                        destfile = f"{playlist_number[info_json['id']]} - {title}.ogg"
+                    else:
+                        destfile = f"{title}.ogg"
+                    if not os.path.exists(dest):
+                        os.makedirs(dest)
+                    os.rename(filename, f"{dest}{destfile}")
+            except FileNotFoundError as e:
+                with open("video-dl-errors.log", "a") as f:
+                    print(f"URL: {urls[u]} Error with file {e}", file=f)
+            except yt_dlp.utils.DownloadError as e:
+                with open("video-dl-errors.log", "a") as f:
+                    print(f"URL: {urls[u]} Error: {e}", file=f)
+                    time.sleep(2)
+            else:
+                break
+            finally:
+                print("\033[A\033[J]", end='\r')
+    print("All tracks downloaded", end='\n')
 else:
     for url in urls:
         if(args.audio):
@@ -205,5 +241,3 @@ else:
                     jsonnfo(info_json, filename)
                 except FileNotFoundError:
                     print("Need to download video before creating metadata nfo,", info_json["uploader"], info_json["id"])
-# else:
-#     print("Type need to be either video or music")
