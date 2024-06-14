@@ -239,7 +239,7 @@ urls = extractPlaylistUrls(args.url)
 for u in range(len(urls)):
     retries = 3
     errors = []
-    for r in retries:
+    for r in range(retries):
         print(f"Download file {u + 1} of {len(urls)}, try {r + 1} of {retries}")
         try:
             if(args.audio):
@@ -261,4 +261,4 @@ for u in range(len(urls)):
         with open("video-dl-errors.log", "a") as f:
             errorsText = f"URL: {urls[u]}\nError: {''.join(errors)}"
             f.write(errorsText)
-    print("All files downloaded", end='\n')
+print("All files downloaded", end='\n')
