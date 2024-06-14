@@ -205,7 +205,7 @@ def downloadMusic(url):
         title = re.sub(r'\-+|\/+', "-", info_json['title'])
         dest = f"{path}/{info_json['artists'][0]}/{album_name}/"
         if(playlist_number[info_json['id']]):
-            filenum = playlist_number[info_json['id']] if len(playlist_number[info_json['id']]) >= 2 else f"0{playlist_number[infjo_json['id']]}"
+            filenum = playlist_number[info_json['id']] if len(str(playlist_number[info_json['id']])) >= 2 else f"0{playlist_number[info_json['id']]}"
             destfile = f"{filenum} - {title}"
         else:
             destfile = f"{title}"
