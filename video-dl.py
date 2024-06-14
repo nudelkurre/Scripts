@@ -13,7 +13,6 @@ import time
 import re
 
 parser = argparse.ArgumentParser(description="Download videos from youtube to either mkv-videos or ogg-audio")
-# parser.add_argument(dest='type', choices=["music", "video"], help='Choose either music or video')
 parser.add_argument(dest='url', nargs='+', help='Enter url to download')
 parser.add_argument("--music", action="store_true", help="Download music video as music file")
 parser.add_argument("--audio-only", dest="audio", action="store_true", help="Download audio from a video")
@@ -27,7 +26,7 @@ path = args.path
 playlist_number = dict()
 
 video_opts = {
-    'outtmpl': f'{path}/%(channel)s/%(upload_date.0:4)s/%(title)s[%(id)s].%(ext)s',
+    'outtmpl': f'{path}/%(id)s.%(ext)s',
     'writesubtitles': True,
     'subtitleslangs': [
         'en',
@@ -52,7 +51,7 @@ video_opts = {
 }
 
 audio_only_opts = {
-    'outtmpl': f'{path}/%(channel)s/%(title)s/%(title)s[%(id)s].%(ext)s',
+    'outtmpl': f'{path}/%(id)s.%(ext)s',
     'format': 'bestaudio/best',
     'writethumbnail': True,
     'restrictfilenames': True,
@@ -68,7 +67,6 @@ audio_only_opts = {
 }
 
 music_opts = {
-    # 'outtmpl': f'{path}/%(artist)s/%(album)s/%(title)s.%(ext)s',
     'outtmpl': f'{path}/%(id)s.%(ext)s',
     'format': 'bestaudio/best',
     'writethumbnail': True,
@@ -145,7 +143,7 @@ def jsonnfo(fileinfo, filename):
     dom = xml.dom.minidom.parse("tempfile")
     xml_content = dom.toprettyxml()
     os.remove("tempfile")
-    output_filename = f"{filename.split('.')[0]}.nfo"
+    output_filename = f"{filename}.nfo"
     f = open(output_filename, "w")
     f.write(xml_content)
     f.close()
@@ -188,9 +186,18 @@ def extractPlaylistUrls(urls):
     print("Playlists extracted")
     return url_arr
 
+def renameFiles(filename, dest, dest_filename, exts):
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+    for ext in exts:
+        os.rename(f"{filename}.{ext}", f"{dest}/{dest_filename}.{ext}")
+
+def cleanName(name):
+    return re.sub(r'[\W]+', "_", name)
+
 urls = extractPlaylistUrls(args.url)
 
-if(args.music or sys.argv[0] == "music-dl"):
+if(args.music or sys.argv[0].split("/")[-1] == "music-dl"):
     for u in range(len(urls)):
         retries = 3
         for r in range(retries):
@@ -224,20 +231,25 @@ if(args.music or sys.argv[0] == "music-dl"):
                 print("\033[A\033[J]", end='\r')
     print("All tracks downloaded", end='\n')
 else:
-    for url in urls:
+    for u in range(len(urls)):
         if(args.audio):
             with YoutubeDL(audio_only_opts) as ydl:
-                info = ydl.extract_info(url, download=True)
+                info = ydl.extract_info(urls[u], download=True)
                 info_json = ydl.sanitize_info(info)
-                filename = "".join(ydl.prepare_filename(info_json).split(".")[0:-1]) + ".ogg"
-                audioMetadata(info_json, filename)
+                filename = f"{info_json['id']}"
+                audioMetadata(info_json, f"{filename}.ogg")
+                dest = f"{path}/{cleanName(info_json['channel'])}/{cleanName(info_json['title'])}/"
+                renameFiles(filename, dest, cleanName(info_json['title']), ["ogg"])
                 print(f"{filename} downloaded")
         else:
             with YoutubeDL(video_opts) as ydl:
-                info = ydl.extract_info(url, download=args.metadata)
+                info = ydl.extract_info(urls[u], download=args.metadata)
                 info_json = ydl.sanitize_info(info)
-                filename = "".join(ydl.prepare_filename(info_json).split(".")[0:-1])
-                try:
-                    jsonnfo(info_json, filename)
-                except FileNotFoundError:
-                    print("Need to download video before creating metadata nfo,", info_json["uploader"], info_json["id"])
+                filename = f"{info_json['id']}"
+                jsonnfo(info_json, filename)
+                dest = f"{path}/{cleanName(info_json['channel'])}/{info_json['upload_date'][0:4]}/"
+                if(not args.metadata):
+                    exts = ["nfo"]
+                else:
+                    exts = ["mkv", "nfo"]
+                renameFiles(filename, dest, cleanName(info_json['title']), exts)
