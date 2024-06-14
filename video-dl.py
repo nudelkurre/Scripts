@@ -195,61 +195,70 @@ def renameFiles(filename, dest, dest_filename, exts):
 def cleanName(name):
     return re.sub(r'[\W]+', "_", name)
 
+def downloadMusic(url):
+    with YoutubeDL(music_opts) as ydl:
+        info = ydl.extract_info(url, download=True)
+        info_json = ydl.sanitize_info(info)
+        filename = f"{info_json['id']}"
+        musicMetadata(info_json, f"{filename}.ogg")
+        album_name = re.sub(r'\-+|\/+', "-", info_json['album'])
+        title = re.sub(r'\-+|\/+', "-", info_json['title'])
+        dest = f"{path}/{info_json['artists'][0]}/{album_name}/"
+        if(playlist_number[info_json['id']]):
+            filenum = playlist_number[info_json['id']] if len(playlist_number[info_json['id']]) >= 2 else f"0{playlist_number[infjo_json['id']]}"
+            destfile = f"{filenum} - {title}"
+        else:
+            destfile = f"{title}"
+        exts = ["ogg"]
+        renameFiles(filename, dest, destfile, exts)
+
+def downloadAudio():
+    with YoutubeDL(audio_only_opts) as ydl:
+        info = ydl.extract_info(url, download=True)
+        info_json = ydl.sanitize_info(info)
+        filename = f"{info_json['id']}"
+        audioMetadata(info_json, f"{filename}.ogg")
+        dest = f"{path}/{cleanName(info_json['channel'])}/{cleanName(info_json['title'])}/"
+        renameFiles(filename, dest, cleanName(info_json['title']), ["ogg"])
+
+def downloadVideo():
+    with YoutubeDL(video_opts) as ydl:
+        info = ydl.extract_info(url, download=args.metadata)
+        info_json = ydl.sanitize_info(info)
+        filename = f"{info_json['id']}"
+        jsonnfo(info_json, filename)
+        dest = f"{path}/{cleanName(info_json['channel'])}/{info_json['upload_date'][0:4]}/"
+        if(not args.metadata):
+            exts = ["nfo"]
+        else:
+            exts = ["mkv", "nfo"]
+        renameFiles(filename, dest, cleanName(info_json['title']), exts)
+
 urls = extractPlaylistUrls(args.url)
 
-if(args.music or sys.argv[0].split("/")[-1] == "music-dl"):
-    for u in range(len(urls)):
-        retries = 3
-        for r in range(retries):
-            print(f"Download track {u + 1} of {len(urls)}, try {r + 1} of {retries}")
-            try:
-                with YoutubeDL(music_opts) as ydl:
-                    info = ydl.extract_info(urls[u], download=True)
-                    info_json = ydl.sanitize_info(info)
-                    filename = f"{info_json['id']}.ogg"
-                    musicMetadata(info_json, filename)
-                    album_name = re.sub(r'\-+', "-", info_json['album'].replace("/", "-"))
-                    title = re.sub(r'\-+', "-", info_json['title'].replace("/", "-"))
-                    dest = f"{path}/{info_json['artists'][0]}/{album_name}/"
-                    if(playlist_number[info_json['id']]):
-                        destfile = f"{playlist_number[info_json['id']]} - {title}.ogg"
-                    else:
-                        destfile = f"{title}.ogg"
-                    if not os.path.exists(dest):
-                        os.makedirs(dest)
-                    os.rename(filename, f"{dest}{destfile}")
-            except FileNotFoundError as e:
-                with open("video-dl-errors.log", "a") as f:
-                    print(f"URL: {urls[u]} Error with file {e}", file=f)
-            except yt_dlp.utils.DownloadError as e:
-                with open("video-dl-errors.log", "a") as f:
-                    print(f"URL: {urls[u]} Error: {e}", file=f)
-                    time.sleep(2)
+for u in range(len(urls)):
+    retries = 3
+    errors = []
+    for r in retries:
+        print(f"Download file {u + 1} of {len(urls)}, try {r + 1} of {retries}")
+        try:
+            if(args.audio):
+                downloadAudio(urls[u])
+            elif(args.music or sys.argv[0].split("/")[-1] == "music-dl"):
+                downloadMusic(urls[u])
             else:
-                break
-            finally:
-                print("\033[A\033[J]", end='\r')
-    print("All tracks downloaded", end='\n')
-else:
-    for u in range(len(urls)):
-        if(args.audio):
-            with YoutubeDL(audio_only_opts) as ydl:
-                info = ydl.extract_info(urls[u], download=True)
-                info_json = ydl.sanitize_info(info)
-                filename = f"{info_json['id']}"
-                audioMetadata(info_json, f"{filename}.ogg")
-                dest = f"{path}/{cleanName(info_json['channel'])}/{cleanName(info_json['title'])}/"
-                renameFiles(filename, dest, cleanName(info_json['title']), ["ogg"])
-                print(f"{filename} downloaded")
+                downloadVideo(urls[u])
+        except FileNotFoundError as e:
+            errors.append(e)
+        except yt_dlp.utils.DownloadError as e:
+            errors.append(e)
+            time.sleep(2)
         else:
-            with YoutubeDL(video_opts) as ydl:
-                info = ydl.extract_info(urls[u], download=args.metadata)
-                info_json = ydl.sanitize_info(info)
-                filename = f"{info_json['id']}"
-                jsonnfo(info_json, filename)
-                dest = f"{path}/{cleanName(info_json['channel'])}/{info_json['upload_date'][0:4]}/"
-                if(not args.metadata):
-                    exts = ["nfo"]
-                else:
-                    exts = ["mkv", "nfo"]
-                renameFiles(filename, dest, cleanName(info_json['title']), exts)
+            break
+        finally:
+            print("\033[A\033[J]", end='\r')
+    else:
+        with open("video-dl-errors.log", "a") as f:
+            errorsText = f"URL: {urls[u]}\nError: {''.join(errors)}"
+            f.write(errorsText)
+    print("All files downloaded", end='\n')
