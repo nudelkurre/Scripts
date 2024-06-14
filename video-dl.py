@@ -212,7 +212,7 @@ def downloadMusic(url):
         exts = ["ogg"]
         renameFiles(filename, dest, destfile, exts)
 
-def downloadAudio():
+def downloadAudio(url):
     with YoutubeDL(audio_only_opts) as ydl:
         info = ydl.extract_info(url, download=True)
         info_json = ydl.sanitize_info(info)
@@ -221,7 +221,7 @@ def downloadAudio():
         dest = f"{path}/{cleanName(info_json['channel'])}/{cleanName(info_json['title'])}/"
         renameFiles(filename, dest, cleanName(info_json['title']), ["ogg"])
 
-def downloadVideo():
+def downloadVideo(url):
     with YoutubeDL(video_opts) as ydl:
         info = ydl.extract_info(url, download=args.metadata)
         info_json = ydl.sanitize_info(info)
