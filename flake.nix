@@ -16,9 +16,33 @@
         scripts;
 
       apps.${system} = {
+        bluetooth = {
+          type = "app";
+          program = "${self.packages.bluetooth}/bin/bluetooth";
+        };
+        disk = {
+          type = "app";
+          program = "${self.packages.disk}/bin/disk";
+        };
+        network = {
+          type = "app";
+          program = "${self.packages.network}/bin/network";
+        };
         video-dl = {
           type = "app";
           program = "${self.packages.video-dl}/bin/video-dl";
+        };
+        volume = {
+          type = "app";
+          program = "${self.packages.volume}/bin/volume";
+        };
+        weather = {
+          type = "app";
+          program = "${self.packages.weather}/bin/weather";
+        };
+        workspaces = {
+          type = "app";
+          program = "${self.packages.workspaces}/bin/workspaces";
         };
       };
     });
