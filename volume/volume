@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+
+import subprocess
+import re
+import argparse
+import time
+import json
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--change_volume", action="store", type=str, choices=["up", "down"])
+parser.add_argument("--mute", action="store_true")
+parser.add_argument("--change_default", action="store_true")
+args = parser.parse_args()
+
+def parse_sinks():
+    parse_data = subprocess.run(['wpctl', 'status'], capture_output=True, text=True).stdout.split("\n\n")
+    sinks = []
+    for i in parse_data:
+        if(i.startswith("Audio")):
+            sections = re.split(r' ├─ | └─ ', i)
+            sink_block = ""
+            for section in sections:
+                if(section.startswith("Sinks:")):
+                    sink_block = section.split("\n")
+            for s in sink_block:
+                s = s.replace("│", "")
+                if("[vol:" in s):
+                    default = True if "*" in s else False
+                    s = s.replace("*", "")
+                    s = s.lstrip()
+                    sink = list(filter(None, re.split(r'\.\s|\s+\[vol:\s|\]$', s)))
+                    sink_json = dict()
+                    sink_json['id'] = sink[0]
+                    sink_json['name'] = sink[1]
+                    sink_json['volume'] = sink[2].split(" ")[0]
+                    sink_json['muted'] = True if "mute" in sink[2].lower() else False
+                    sink_json['default'] = default
+                    sinks.append(sink_json)
+    return(sinks)
+
+def get_device_api(id):
+    output = subprocess.run(["wpctl", "inspect", id], capture_output=True, text=True).stdout.replace("    ", "").replace("  * ", "").split("\n")
+    for i in output:
+        if(i.startswith("device.api")):
+            return i.split(" = ")[1].replace("\"", "")
+    
+
+def get_default():
+    sinks = parse_sinks()
+    for sink in sinks:
+        if(sink['default']):
+            return sink
+
+def get_volume():
+    sink = get_default()
+    icons = {"alsa": "", "bluez5": "󰂰"}
+    volume = dict()
+    device_api = get_device_api(sink['id'])
+    if(sink['muted']):
+        volume['icon'] = "󰝟"
+        volume['volume'] = "Muted"
+    else:
+        volume['icon'] = icons[device_api] if device_api in icons else "?"
+        volume['volume'] = str(int(float(sink['volume']) * 100)) + "%"
+    return volume
+
+def change_volume():
+    sink = get_default()
+    if(args.change_volume == "up"):
+        volume = float(sink['volume']) + 0.05
+    elif(args.change_volume == "down"):
+        volume = float(sink['volume']) - 0.05
+    if(volume >= 0.0 and volume <= 1.0):
+        subprocess.run(["wpctl", "set-volume", sink['id'], str(volume)], capture_output=True, text=True)
+
+def mute():
+    sink = get_default()
+    subprocess.run(["wpctl", "set-mute", sink['id'], "toggle"], capture_output=True, text=True)
+
+def change_default():
+    sinks = parse_sinks()
+    counter = 0
+    for sink in sinks:
+        if(not sink['default']):
+            counter += 1
+        elif(sink['default']):
+            new_default = sinks[(counter + 1) % len(sinks)]
+            subprocess.run(["wpctl", "set-default", new_default['id']], capture_output=True, text=True)
+
+if(args.change_volume == None and not args.mute and not args.change_default):
+    try:
+        while(True):
+            try:
+                print(json.dumps(get_volume()), flush=True)
+            except json.decoder.JSONDecodeError:
+                print(json.dumps("{}"), flush=True)
+            except TypeError:
+                print(json.dumps("{'icon': '?', 'volume': 'ERROR'}"), flush=True)
+            time.sleep(0.5)
+    except KeyboardInterrupt:
+        pass
+elif(args.change_volume):
+    change_volume()
+elif(args.mute):
+    mute()
+elif(args.change_default):
+    change_default()

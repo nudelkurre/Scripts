@@ -1,0 +1,165 @@
+#!/usr/bin/env python3
+
+import requests
+import json
+import time
+from datetime import datetime
+from suntime import Sun
+from geopy.geocoders import Nominatim
+import argparse
+
+lat = 0
+lon = 0
+
+parser = argparse.ArgumentParser()
+parser.add_argument("location", action="store", type=str)
+args = parser.parse_args()
+
+icons = {
+    1: "☀️",
+    2: "🌤️",
+    3: "⛅",
+    4: "⛅",
+    5: "☁️",
+    6: "☁️",
+    7: "🌫️",
+    8: "🌧️",
+    9: "🌧️",
+    10: "🌧️",
+    11: "⛈️",
+    12: "🌨️",
+    13: "🌨️🌧️",
+    14: "🌨️🌧️",
+    15: "🌨️",
+    16: "🌨️",
+    17: "❄️",
+    18: "🌧️",
+    19: "🌧️",
+    20: "🌧️",
+    21: "⚡",
+    22: "🌨️🌧️",
+    23: "🌨️🌧️",
+    24: "🌨️🌧️",
+    25: "🌨️",
+    26: "🌨️",
+    27: "🌨️"
+}
+
+descriptions = {
+    1: "Clear sky",
+    2: "Nearly clear sky",
+    3: "Variable cloudiness",
+    4: "Halfclear sky",
+    5: "Cloudy sky",
+    6: "Overcast",
+    7: "Fog",
+    8: "Light rain showers",
+    9: "Moderate rain showers",
+    10: "Heavy rain showers",
+    11: "Thunderstorm",
+    12: "Light sleet showers",
+    13: "Moderate sleet showers",
+    14: "Heavy sleet showers",
+    15: "Light snow showers",
+    16: "Moderate snow showers",
+    17: "Heavy snow showers",
+    18: "Light rain",
+    19: "Moderate rain",
+    20: "Heavy rain",
+    21: "Thunder",
+    22: "Light sleet",
+    23: "Moderate sleet",
+    24: "Heavy sleet",
+    25: "Light snowfall",
+    26: "Moderate snowfall",
+    27: "Heavy snowfall"
+}
+
+def get_location():
+    loc = Nominatim(user_agent="Weather widget")
+    g = loc.geocode(args.location)
+    lat = float(str(g.latitude)[0:7])
+    lon = float(str(g.longitude)[0:7])
+    return lat, lon
+
+def get_weather_data(lat, lon):
+    if(lat != 0 and lon != 0):
+        headers = {
+            'User-Agent': 'Weather widget'
+        }
+        url = f"https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/{lon}/lat/{lat}/data.json"
+        req = requests.get(url, headers=headers)
+        if(req.status_code == 200):
+            return req.json()
+        else:
+            return req.status_code
+    else:
+        return "Error"
+
+def get_sunrise_sunset(lat, lon):
+    if(lat != 0 and lon != 0):
+        sun = Sun(lat, lon)
+        sunrise = sun.get_local_sunrise_time().strftime("%H:%M")
+        sunset = sun.get_local_sunset_time().strftime("%H:%M")
+        sunrise_unix = sun.get_local_sunrise_time().strftime("%s")
+        sunset_unix = sun.get_local_sunset_time().strftime("%s")
+        return sunrise, sunset, sunrise_unix, sunset_unix
+    else:
+        return "00:00", "00:00", "0", "0"
+
+def clean_json(weather_data):
+    data = weather_data['timeSeries'][0]['parameters']
+    for i in data:
+        if(i['name'] == "t"):
+            temp = str(i['values'][0])
+        elif(i['name'] == "Wsymb2"):
+            icon = str(i['values'][0])
+            description = descriptions[i['values'][0]]
+        elif(i['name'] == "r"):
+            humidity = str(i['values'][0])
+        if(i['name'] == "ws"):
+            wind_speed = str(i['values'][0])
+
+    sunrise, sunset, sunrise_unix, sunset_unix = get_sunrise_sunset(lat, lon)
+
+    day_cycle = "day" if datetime.now().strftime("%s") >= sunrise_unix and datetime.now().strftime("%s") < sunset_unix else "night"
+
+    weather_json = dict()
+    weather_json['status'] = "ok"
+    weather_json['weather-info'] = dict()
+    weather_json['weather-info']['icon'] = f"images/icons/weather/{day_cycle}/{icon}.svg" if icon else ""
+    weather_json['weather-info']['description'] = description if description else ""
+    weather_json['weather-info']['temp'] = temp if temp else ""
+    weather_json['weather-info']['windspeed'] = wind_speed if wind_speed else ""
+    weather_json['weather-info']['humidity'] = humidity if humidity else ""
+    weather_json['sun'] = dict()
+    weather_json['sun']['rise'] = sunrise
+    weather_json['sun']['set'] = sunset
+    weather_json['location-data'] = dict()
+    weather_json['location-data']['lat'] = lat
+    weather_json['location-data']['lon'] = lon
+    weather_json['location-data']['url'] = f"https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/{lon}/lat/{lat}/data.json"
+
+    return weather_json
+
+lat, lon = get_location()
+
+try:
+    while(True):
+        try:
+            if(lat != 0 and lon != 0):
+                lat, lon = get_location()
+            weather_data = get_weather_data(lat, lon)
+            if(isinstance(weather_data, dict)):
+                print(json.dumps(clean_json(weather_data)), flush=True)
+            else:
+                print({"status": "Location error"}, flush=True)
+        except json.decoder.JSONDecodeError:
+            print('{"status": "error"}', flush=True)
+        except requests.exceptions.ConnectionError:
+            print('{"status": "error"}', flush=True)
+        time.sleep(600)
+except KeyboardInterrupt:
+    pass
+
+# clean_json(get_weather_data(lat, lon))

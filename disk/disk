@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+
+import json
+import time
+import psutil
+from psutil._common import bytes2human
+
+def get_disk_data():
+    disk_json = dict()
+    disks = psutil.disk_partitions()
+    for disk in disks:
+        mountpoint = disk.mountpoint
+        if(mountpoint not in disk_json):
+            disk_json[mountpoint] = dict()
+        data = psutil.disk_usage(mountpoint)
+        disk_json[mountpoint]['name'] = disk.device
+        disk_json[mountpoint]['fsused'] = bytes2human(data.used)
+        disk_json[mountpoint]['fsuse_pct'] = f"{data.percent}%"
+        disk_json[mountpoint]['fssize'] = bytes2human(data.total)
+    return disk_json
+
+try:
+    while(True):
+        try:
+            print(json.dumps(get_disk_data()), flush=True)
+        except json.decoder.JSONDecodeError:
+            print("{}", flush=True)
+        time.sleep(0.5)
+except KeyboardInterrupt:
+    pass
