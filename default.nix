@@ -4,10 +4,7 @@ with pkgs.python311Packages;
   video-dl = buildPythonPackage {
     pname = "video-dl";
     version = "2024-06-14";
-    src = lib.fileset.toSource {
-      root = ./.;
-      fileset = ./video-dl.py;
-    };
+    src = ./video-dl;
 
     format = "other";
 
