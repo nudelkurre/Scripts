@@ -12,8 +12,14 @@
       pkgs = nixpkgs.legacyPackages.${system};
       scripts = import ./. { inherit (pkgs) pkgs buildPythonPackage fetchurl lib stdenv; };
     in {
-      # lib = { inherit (scripts); };
       packages = 
         scripts;
+
+      apps.${system} = {
+        video-dl = {
+          type = "app";
+          program = "${self.packages.video-dl}/bin/video-dl";
+        };
+      };
     });
 }
