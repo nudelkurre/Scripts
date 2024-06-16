@@ -10,9 +10,10 @@ def get_interfaces():
     for i in interfaces.keys():
         if(i not in interface_json):
             interface_json[i] = dict()
-        interface_json[i]['ip'] = interfaces[i][0].address
-        interface_json[i]['netmask'] = interfaces[i][0].netmask
-        interface_json[i]['broadcast'] = interfaces[i][0].broadcast
+        interface_json[i]['connection'] = "connected" if interfaces[i][0].family != psutil.AF_LINK else "disconnected"
+        interface_json[i]['ip'] = interfaces[i][0].address if interfaces[i][0].family != psutil.AF_LINK else ""
+        interface_json[i]['netmask'] = interfaces[i][0].netmask if interfaces[i][0].family != psutil.AF_LINK else ""
+        interface_json[i]['broadcast'] = interfaces[i][0].broadcast if interfaces[i][0].family != psutil.AF_LINK else ""
 
     return interface_json
 

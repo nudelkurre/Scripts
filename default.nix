@@ -31,7 +31,7 @@ with pkgs.python311Packages;
   };
   network = buildPythonPackage {
     pname = "network";
-    version = "2024-06-14";
+    version = "2024-06-16";
     src = ./network;
 
     format = "other";
