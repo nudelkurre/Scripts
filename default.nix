@@ -99,6 +99,7 @@ with pkgs.python311Packages;
         }
       )
       requests
+      tzlocal
     ];
 
     postInstall = ''
