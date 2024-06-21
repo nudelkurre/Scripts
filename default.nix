@@ -59,7 +59,7 @@ with pkgs.python311Packages;
     postInstall = ''
       mkdir -p $out/bin
       cp -v video-dl.py $out/bin/video-dl
-      ln -s $out/bin/video-dl $out/bin/music-dl
+      cp -v video-dl.py $out/bin/music-dl
     '';
   };
   volume = buildPythonPackage {

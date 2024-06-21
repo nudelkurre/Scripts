@@ -154,6 +154,7 @@ def audioMetadata(fileinfo, filename):
     ogg['ARTIST'] = fileinfo['uploader']
     ogg['ALBUM'] = fileinfo['title']
     ogg['DATE'] = str(fileinfo["upload_date"][:4] + "-" + fileinfo["upload_date"][4:6] + "-" + fileinfo["upload_date"][6:8]) if fileinfo['upload_date'] != None else ""
+    ogg['ORIGINALYEAR'] = str(fileinfo["upload_date"][:4]) if fileinfo['upload_date'] != None else ""
     ogg['TRACKNUMBER'] = "1"
     ogg['COMMENT'] = fileinfo["description"]
     ogg.save()
@@ -163,7 +164,8 @@ def musicMetadata(fileinfo, filename):
     ogg['TITLE'] = fileinfo['title']
     ogg['ARTIST'] = fileinfo['artists'][0]
     ogg['ALBUM'] = fileinfo['album']
-    ogg['DATE'] = str(fileinfo["release_date"][:4] + "-" + fileinfo["release_date"][4:6] + "-" + fileinfo["release_date"][6:8]) if fileinfo['release_date'] != None else ""
+    ogg['DATE'] = str(fileinfo["release_date"][:4] + "-" + fileinfo["release_date"][4:6] + "-" + fileinfo["release_date"][6:8]) if fileinfo['release_date'] != None else str(fileinfo["upload_date"][:4] + "-" + fileinfo["upload_date"][4:6] + "-" + fileinfo["upload_date"][6:8]) if fileinfo['upload_date'] != None else ""
+    ogg['ORIGINALYEAR'] = str(fileinfo["release_date"][:4]) if fileinfo["release_date"] != None else str(fileinfo["upload_date"][:4]) if fileinfo["upload_date"] != None else ""
     ogg['TRACKNUMBER'] = str(playlist_number[fileinfo['id']]) if str(playlist_number[fileinfo['id']]) else '0'
     ogg.save()
 
