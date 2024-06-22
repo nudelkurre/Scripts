@@ -251,10 +251,11 @@ for u in range(len(urls)):
             else:
                 downloadVideo(urls[u])
         except FileNotFoundError as e:
-            errors.append(e)
+            errors.append(str(e))
         except yt_dlp.utils.DownloadError as e:
-            errors.append(e)
+            errors.append(str(e))
             time.sleep(2)
+            print("\033[A\033[J]", end='\r')
         else:
             break
         finally:
