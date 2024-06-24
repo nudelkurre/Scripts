@@ -239,32 +239,35 @@ def downloadVideo(url):
             exts = ["mkv", "nfo"]
         renameFiles(filename, dest, f"{cleanName(info_json['title'])}[{info_json['id']}]", exts)
 
-urls = extractPlaylistUrls(args.url)
+try:
+    urls = extractPlaylistUrls(args.url)
 
-for u in range(len(urls)):
-    retries = 3
-    errors = []
-    for r in range(retries):
-        print(f"Download file {u + 1} of {len(urls)}, try {r + 1} of {retries}")
-        try:
-            if(args.audio):
-                downloadAudio(urls[u])
-            elif(args.music or sys.argv[0].split("/")[-1] == "music-dl"):
-                downloadMusic(urls[u])
+    for u in range(len(urls)):
+        retries = 3
+        errors = []
+        for r in range(retries):
+            print(f"Download file {u + 1} of {len(urls)}, try {r + 1} of {retries}")
+            try:
+                if(args.audio):
+                    downloadAudio(urls[u])
+                elif(args.music or sys.argv[0].split("/")[-1] == "music-dl"):
+                    downloadMusic(urls[u])
+                else:
+                    downloadVideo(urls[u])
+            except FileNotFoundError as e:
+                errors.append(str(e))
+            except yt_dlp.utils.DownloadError as e:
+                errors.append(str(e))
+                time.sleep(2)
+                print("\033[A\033[J]", end='\r')
             else:
-                downloadVideo(urls[u])
-        except FileNotFoundError as e:
-            errors.append(str(e))
-        except yt_dlp.utils.DownloadError as e:
-            errors.append(str(e))
-            time.sleep(2)
-            print("\033[A\033[J]", end='\r')
+                break
+            finally:
+                print("\033[A\033[J]", end='\r')
         else:
-            break
-        finally:
-            print("\033[A\033[J]", end='\r')
-    else:
-        with open("video-dl-errors.log", "a") as f:
-            errorsText = f"URL: {urls[u]}\nError: {''.join(errors)}"
-            f.write(errorsText)
-print("All files downloaded", end='\n')
+            with open("video-dl-errors.log", "a") as f:
+                errorsText = f"URL: {urls[u]}\nError: {''.join(errors)}"
+                f.write(errorsText)
+    print("All files downloaded", end='\n')
+except KeyboardInterrupt:
+    print("\nExiting")
