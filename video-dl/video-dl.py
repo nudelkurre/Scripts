@@ -237,7 +237,7 @@ def downloadVideo(url):
             exts = ["nfo"]
         else:
             exts = ["mkv", "nfo"]
-        renameFiles(filename, dest, cleanName(info_json['title']), exts)
+        renameFiles(filename, dest, f"{cleanName(info_json['title'])}[{info_json['id']}]", exts)
 
 urls = extractPlaylistUrls(args.url)
 
