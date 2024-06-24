@@ -25,13 +25,12 @@ path = args.path
 
 playlist_number = dict()
 
+subtitleslangs = ['en', 'sv']
+
 video_opts = {
     'outtmpl': f'{path}/%(id)s.%(ext)s',
     'writesubtitles': True,
-    'subtitleslangs': [
-        'en',
-        'sv'
-    ],
+    'subtitleslangs': subtitleslangs,
     'nooverwrites': True,
     'quiet':  True,
     'no_warnings': True,
@@ -193,6 +192,10 @@ def renameFiles(filename, dest, dest_filename, exts):
         os.makedirs(dest)
     for ext in exts:
         os.rename(f"{filename}.{ext}", f"{dest}/{dest_filename}.{ext}")
+
+    for lang in subtitleslangs:
+        if os.path.exists(f"{filename}.{lang}.vtt"):
+            os.rename(f"{filename}.{lang}.vtt", f"{dest}/{dest_filename}.{lang}.vtt")
 
 def cleanName(name):
     return re.sub(r'[\W]+', "_", name)
