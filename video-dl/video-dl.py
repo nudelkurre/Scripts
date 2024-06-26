@@ -18,6 +18,7 @@ parser.add_argument("--music", action="store_true", help="Download music video a
 parser.add_argument("--audio-only", dest="audio", action="store_true", help="Download audio from a video")
 parser.add_argument("--path", default=os.getcwd(), help="Used to set path instead of using current directory")
 parser.add_argument("--metadata", action="store_false", help="Get only metadata of video")
+parser.add_argument("--locked", action="store_true", help="Set the locked tag inside nfo metadata (only used for videos)")
 parser.add_argument("--season", help="Add optional season")
 args = parser.parse_args()
 
@@ -136,7 +137,7 @@ def jsonnfo(fileinfo, filename):
     uniqueid.text = j_uniqueid
     uniqueid.set("type", "Youtube")
     locked = x.SubElement(episode, "lockdata")
-    locked.text = "true"
+    locked.text = str(args.locked).lower()
     output = x.ElementTree(episode)
     output.write("tempfile")
     dom = xml.dom.minidom.parse("tempfile")
@@ -240,6 +241,9 @@ def downloadVideo(url):
         renameFiles(filename, dest, f"{cleanName(info_json['title'])}[{info_json['id']}]", exts)
 
 try:
+    if(args.locked and (args.music or args.audio)):
+        print("Locked only used for videos")
+        exit(1)
     urls = extractPlaylistUrls(args.url)
 
     for u in range(len(urls)):

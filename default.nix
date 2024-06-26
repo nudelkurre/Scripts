@@ -47,7 +47,7 @@ with pkgs.python311Packages;
   };
   video-dl = buildPythonPackage {
     pname = "video-dl";
-    version = "2024-06-22";
+    version = "2024-06-26";
     src = ./video-dl;
 
     format = "other";
