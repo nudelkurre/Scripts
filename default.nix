@@ -80,7 +80,7 @@ with pkgs.python311Packages;
   };
   weather = buildPythonPackage {
     pname = "weather";
-    version = "2024-06-29";
+    version = "2024-07-01";
     src = ./weather;
 
     format = "other";

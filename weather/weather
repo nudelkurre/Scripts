@@ -104,8 +104,8 @@ def get_sunrise_sunset(lat, lon):
         sunrise = sun.get_sunrise_time(time_zone=localtz)
         sunset = sun.get_sunset_time(time_zone=localtz)
         if(sunset < sunrise):
-            sunset_day = sunset.day
-            sunset = sunset.replace(day = sunset_day + 1)
+            sunrise_day = sunrise.day
+            sunset = sunset.replace(day = sunrise_day)
         return sunrise.strftime("%H:%M"), sunset.strftime("%H:%M"), sunrise.strftime("%s"), sunset.strftime("%s")
     else:
         return "00:00", "00:00", "0", "0"
