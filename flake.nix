@@ -12,8 +12,7 @@
       pkgs = nixpkgs.legacyPackages.${system};
       scripts = import ./. { inherit (pkgs) pkgs buildPythonPackage fetchurl lib stdenv; };
     in {
-      packages = 
-        scripts;
+      packages = scripts;
 
       apps.${system} = {
         bluetooth = {
