@@ -69,10 +69,6 @@ with pkgs.python311Packages;
 
     format = "other";
 
-    dependencies = [
-      yt-dlp
-    ];
-
     postInstall = ''
       mkdir -p $out/bin
       cp -v volume $out/bin/volume
