@@ -212,7 +212,7 @@ def downloadMusic(url):
         dest = f"{path}/{info_json['artists'][0]}/{album_name}/"
         if(playlist_number[info_json['id']]):
             filenum = playlist_number[info_json['id']] if len(str(playlist_number[info_json['id']])) >= 2 else f"0{playlist_number[info_json['id']]}"
-            destfile = f"{filenum} - {title}"
+            destfile = f"{filenum} {title}"
         else:
             destfile = f"{title}"
         exts = ["ogg"]
