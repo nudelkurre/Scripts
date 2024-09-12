@@ -10,43 +10,39 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--eww", action="store_true")
 args = parser.parse_args()
 
-def get_bluetooth_devices():
-    devices = subprocess.run(["upower", "-d"], capture_output=True, text=True).stdout.split("\n\n")
-    device_json = dict()
+def get_device_info(device):
+    info = subprocess.run(["bluetoothctl", "info", device], capture_output=True, text=True).stdout.replace("\t", "").split("\n")
+    info_json = dict()
+    for i in info:
+        if("Name" in i):
+            info_json["name"] = i.split(":")[1].lstrip().rstrip()
+        elif("Icon:" in i):
+            icon_type = i.split(":")[1].lstrip().rstrip()
+            icon = "?"
+            if(icon_type == "input-gaming"):
+                icon = ""
+            elif(icon_type == "audio-headset"):
+                icon = "󰋎"
+            info_json["icon"] = icon
+        elif("Battery Percentage:" in i):
+            battery = i.split("(")[1].replace(")", "").lstrip().rstrip()
+            info_json["battery_level"] = f"{battery}%"
+    return info_json
 
-    for device in devices:
-        if("serial:" in device):
-            device_rows = device.split("\n")
-            name = ""
-            serial = ""
-            device_type = ""
-            for d in device_rows:
-                d = d.lstrip().rstrip()
-                # print(d)
-                if(d.startswith("serial:")):
-                    serial = " ".join(list(filter(None, d.split(" ")[1:])))
-                elif(d.startswith("model:")):
-                    name = " ".join(list(filter(None, d.split(" ")[1:])))
-                elif(d.startswith("percentage")):
-                    battery_level = " ".join(list(filter(None, d.split(" ")[1:]))).split(" ")[0]
-                elif(d.startswith("headset")):
-                    device_type = "󰋎"
-                elif(d.startswith("gaming-input")):
-                    device_type = ""
-            matching = re.match(r"^([\dA-Fa-f]{2}:){5}[\dA-Fa-f]{2}$", serial)
-            if(matching):
-                if(serial not in device_json):
-                    device_json[serial] = dict()
-                device_json[serial]['name'] = name
-                device_json[serial]['battery_level'] = battery_level
-                device_json[serial]['icon'] = device_type
-    return device_json
+def get_bluetooth_devices():
+    devices = list(filter(None, subprocess.run(["bluetoothctl", "devices"], capture_output=True, text=True).stdout.split("\n")))
+    device_macs = [x.split(" ")[1] for x in devices]
+    devices_json = dict()
+    for d in device_macs:
+        devices_json[d] = get_device_info(d)
+    return devices_json
 
 def eww_format():
     devices = get_bluetooth_devices()
     box_data = ""
     for d in devices.keys():
-        box_data += f"(box :class \"bluetooth-box\" :space-evenly false \"{devices[d]['icon']} {devices[d]['battery_level']}\")"
+        if("battery_level" in devices[d]):
+            box_data += f"(box :class \"bluetooth-box\" :space-evenly false \"{devices[d]['icon']} {devices[d]['battery_level']}\")"
     return f"(box {box_data})"
 
 try:
