@@ -4,11 +4,6 @@ import subprocess
 import json
 import re
 import time
-import argparse
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--eww", action="store_true")
-args = parser.parse_args()
 
 def get_device_info(device):
     info = subprocess.run(["bluetoothctl", "info", device], capture_output=True, text=True).stdout.replace("\t", "").split("\n")
@@ -27,6 +22,10 @@ def get_device_info(device):
         elif("Battery Percentage:" in i):
             battery = i.split("(")[1].replace(")", "").lstrip().rstrip()
             info_json["battery_level"] = f"{battery}%"
+        elif("Connected:" in i):
+            connected = i.split(":")[1].lstrip().rstrip()
+            if(connected == "no"):
+                return {}
     return info_json
 
 def get_bluetooth_devices():
@@ -34,24 +33,15 @@ def get_bluetooth_devices():
     device_macs = [x.split(" ")[1] for x in devices]
     devices_json = dict()
     for d in device_macs:
-        devices_json[d] = get_device_info(d)
+        info = get_device_info(d)
+        if(info != {}):
+            devices_json[d] = info
     return devices_json
-
-def eww_format():
-    devices = get_bluetooth_devices()
-    box_data = ""
-    for d in devices.keys():
-        if("battery_level" in devices[d]):
-            box_data += f"(box :class \"bluetooth-box\" :space-evenly false \"{devices[d]['icon']} {devices[d]['battery_level']}\")"
-    return f"(box {box_data})"
 
 try:
     while(True):
         try:
-            if(args.eww):
-                print(eww_format(), flush=True)
-            else:
-                print(json.dumps(get_bluetooth_devices()), flush=True)
+            print(json.dumps(get_bluetooth_devices()), flush=True)
         except json.decoder.JSONDecodeError:
             print("{}", flush=True)
         time.sleep(5)
