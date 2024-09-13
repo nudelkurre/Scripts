@@ -3,7 +3,7 @@ with pkgs.python311Packages;
 {
   bluetooth = buildPythonPackage {
     pname = "bluetooth";
-    version = "2024-09-13";
+    version = "2024-09-14";
     src = ./bluetooth;
 
     format = "other";
