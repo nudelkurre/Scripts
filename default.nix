@@ -64,7 +64,7 @@ with pkgs.python311Packages;
   };
   volume = buildPythonPackage {
     pname = "volume";
-    version = "2024-06-14";
+    version = "2024-09-14";
     src = ./volume;
 
     format = "other";

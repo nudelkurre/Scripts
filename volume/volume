@@ -62,6 +62,7 @@ def get_volume():
     else:
         volume['icon'] = icons[device_api] if device_api in icons else "?"
         volume['volume'] = str(int(float(sink['volume']) * 100)) + "%"
+    volume['name'] = sink['name']
     return volume
 
 def change_volume():
