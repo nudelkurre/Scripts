@@ -47,10 +47,19 @@ with pkgs.python311Packages;
   };
   video-dl = buildPythonPackage {
     pname = "video-dl";
-    version = "2024-07-30";
+    version = "2024-10-19";
     src = ./video-dl;
 
     format = "other";
+
+    makeWrapperArgs = 
+      let
+        packagesToBinPath = [ ]
+        ++ lib.optional true pkgs.ffmpeg;
+      in
+      lib.optionals (packagesToBinPath != [ ]) [
+        ''--prefix PATH : "${lib.makeBinPath packagesToBinPath}"''
+      ];
 
     dependencies = [
       yt-dlp
