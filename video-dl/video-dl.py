@@ -11,6 +11,9 @@ from mutagen.oggvorbis import OggVorbis
 import xml.dom.minidom
 import time
 import re
+from datetime import date
+
+today = date.today().strftime("%Y-%m-%d")
 
 parser = argparse.ArgumentParser(description="Download videos from youtube to either mkv-videos or ogg-audio")
 parser.add_argument(dest='url', nargs='+', help='Enter url to download')
@@ -93,15 +96,15 @@ playlist_opts = {
 
 def jsonnfo(fileinfo, filename):
     j_title = fileinfo["title"]
-    j_plot = fileinfo["description"].lstrip("\n")
-    j_director = fileinfo["uploader"]
-    j_releasedate = fileinfo["upload_date"][:4] + "-" + fileinfo["upload_date"][4:6] + "-" + fileinfo["upload_date"][6:8]
-    j_year = fileinfo["upload_date"][:4]
+    j_plot = fileinfo["description"].lstrip("\n") if "description" in fileinfo.keys() else ""
+    j_director = fileinfo["uploader"] if "uploader" in fileinfo.keys() else "NoName"
+    j_releasedate = fileinfo["upload_date"][:4] + "-" + fileinfo["upload_date"][4:6] + "-" + fileinfo["upload_date"][6:8] if "upload_date" in fileinfo.keys() else today
+    j_year = fileinfo["upload_date"][:4] if "upload_date" in fileinfo.keys() else today[:4]
     j_episode = "".join(j_releasedate.split("-")[1:])
     j_season = j_year if not args.season and j_year else "01"
-    j_genres = fileinfo["categories"]
-    j_tags = fileinfo["tags"]
-    j_uniqueid = fileinfo["id"]
+    j_genres = fileinfo["categories"] if "categories" in fileinfo.keys() else ""
+    j_tags = fileinfo["tags"] if "tags" in fileinfo.keys() else ""
+    j_uniqueid = fileinfo["id"] if "id" in fileinfo.keys() else ""
     movie = x.Element("movie")
     episode = x.Element("episodedetails")
     
@@ -233,7 +236,7 @@ def downloadVideo(url):
         info_json = ydl.sanitize_info(info)
         filename = f"{info_json['id']}"
         jsonnfo(info_json, filename)
-        dest = f"{path}/{cleanName(info_json['channel'])}/{info_json['upload_date'][0:4]}/"
+        dest = f"{path}/{cleanName(info_json['channel'])}/{info_json['upload_date'][0:4]}/" if "channel" in info_json.keys() and "upload_date" in info_json.keys() else f"{path}/NoName/{today[0:4]}/"
         if(not args.metadata):
             exts = ["nfo"]
         else:
