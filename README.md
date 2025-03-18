@@ -2,6 +2,8 @@
 
 Small helper scripts
 
+**Archived since I don't use the scripts anymore since I reimplemented them inside my new system bar [ngb](https://github.com/nudelkurre/ngb)**
+
 ## Descriptions
 
 All scripts except for video-dl prints the output in json format to be able to easily be used by other programs
